@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'oxylabs' => [
+        'key' => env('OXYLABS_API_KEY'),
+        'username' => env('OXYLABS_USERNAME'),
+        'password' => env('OXYLABS_PASSWORD'),
+        'url' => env('OXYLABS_URL', 'https://realtime.oxylabs.io/v1/queries'),
+    ],
+
 ];

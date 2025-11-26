@@ -10,6 +10,8 @@
                 <li class="nav-item"><a class="nav-link active" href="{{ url('/admin') }}">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('admin.routes') }}">Routes</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('admin.providers') }}">Providers</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ route('admin.jobs') }}">Jobs</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ route('admin.scrapes') }}">Scrapes</a></li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
                     role="button" data-bs-toggle="dropdown" aria-expanded="false">

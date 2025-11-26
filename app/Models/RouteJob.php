@@ -28,6 +28,11 @@ class RouteJob extends Model
         return $this->belongsTo(Route::class, 'route_id');
     }
 
+    public function scrapes()
+    {
+        return $this->hasMany(\App\Models\Scrape::class, 'route_job_id');
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('archived', false);

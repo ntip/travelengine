@@ -28,4 +28,22 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::get('/providers/{provider}', [ProviderController::class, 'show'])
         ->name('providers.show');
+
+    // Jobs admin
+    Route::get('/jobs', function () {
+        return view('admin.jobs.index');
+    })->name('jobs');
+
+    Route::get('/jobs/{job}', function (App\Models\RouteJob $job) {
+        return view('admin.jobs.show', compact('job'));
+    })->name('jobs.show');
+
+    // Scrapes admin
+    Route::get('/scrapes', function () {
+        return view('admin.scrapes.index');
+    })->name('scrapes');
+
+    Route::get('/scrapes/{scrape}', function (App\Models\Scrape $scrape) {
+        return view('admin.scrapes.show', compact('scrape'));
+    })->name('scrapes.show');
 });
