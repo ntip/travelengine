@@ -2,11 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Models\Route as RouteModel;
+use App\Http\Controllers\Admin\ProviderController;
 
 Route::get('/', function () {
     return view('welcome');
 });
-
 
 // Admin Panel - Dashboard / Homepage - Show Admin View
 Route::get('/admin', function () {
@@ -21,3 +21,11 @@ Route::get('/admin/routes', function () {
 Route::get('/routes/{route}', function (RouteModel $route) {
     return view('admin.routes.show', compact('route'));
 })->name('admin.routes.show');
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/providers', [ProviderController::class, 'index'])
+        ->name('providers');
+
+    Route::get('/providers/{provider}', [ProviderController::class, 'show'])
+        ->name('providers.show');
+});

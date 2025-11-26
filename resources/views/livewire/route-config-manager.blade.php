@@ -33,7 +33,7 @@
     </form>
 
     {{-- Config list --}}
-    <table class="table table-sm align-middle">
+    <table class="table table-bordered table-sm align-middle">
         <thead>
             <tr>
                 <th style="width: 40%">Name</th>

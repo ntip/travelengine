@@ -9,17 +9,17 @@ class RouteConfig extends Model
 {
     use HasFactory;
 
-    // Because table is "routes_config" not "route_configs"
     protected $table = 'routes_config';
 
     protected $fillable = [
-        'route_id',
+        'route_id',   // UUID → routes.id
         'name',
         'value',
     ];
 
     public function route()
     {
+        // route_id (uuid) → routes.id (uuid)
         return $this->belongsTo(Route::class, 'route_id');
     }
 }

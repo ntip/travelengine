@@ -38,11 +38,23 @@
     <div class="container py-4">
         <div class="card">
             <div class="card-header">
-                Route Details
+                Route Config
             </div>
             <div class="card-body">
                 @livewire('route-config-manager', ['route' => $route])
             </div>
         </div>
     </div>
+    <div class="container py-4">
+        <div class="card">
+            <div class="card-header">
+                Jobs Details
+            </div>
+            <div class="card-body">
+                <livewire:route-jobs-manager :route="$route" />
+            </div>
+        </div>
+    </div>
+
+
 @endsection
