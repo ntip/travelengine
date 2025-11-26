@@ -32,6 +32,12 @@
                         <div class="card-body">
                             <div class="small text-muted">{{ $log->created_at->format('Y-m-d H:i:s') }}</div>
                             <pre class="mt-2">{{ $log->content }}</pre>
+                            @if ($log->request_payload)
+                                <div class="mt-2">
+                                    <strong>Request payload:</strong>
+                                    <pre class="small bg-light p-2">{{ json_encode($log->request_payload, JSON_PRETTY_PRINT) }}</pre>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 @endforeach

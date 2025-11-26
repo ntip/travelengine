@@ -6,6 +6,7 @@ use App\Models\Scrape;
 use App\Models\ScrapeLog;
 use App\Services\OxylabsClient;
 use App\Services\ProviderGrabberFactory;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -49,7 +50,8 @@ class RunScrape implements ShouldQueue
             'render' => 'html',
             'url' => $url,
             'xhr' => true,
-            'browser_instructions' => [['type' => 'wait', 'wait_time_s' => 4]],
+            'browser_instructions' => [['type' => 'wait', 'wait_time_s' => 10]],
+            'geo_location' => 'Australia',
             'user_agent_type' => $ua,
             'context' => [['key' => 'follow_redirects', 'value' => true]],
         ];
@@ -59,11 +61,12 @@ class RunScrape implements ShouldQueue
 
             $body = $result['body'] ?? null;
 
-            // Save generic log content
+            // Save generic log content and the Oxylabs request payload for analysis
             $log = ScrapeLog::create([
                 'scrape_id' => $this->scrape->id,
                 'route_job_id' => $this->scrape->route_job_id,
                 'content' => is_string($body) ? $body : json_encode($body),
+                'request_payload' => $payload,
                 'meta' => [
                     'status' => $result['status'] ?? null,
                     'code' => $result['code'] ?? null,
@@ -92,6 +95,7 @@ class RunScrape implements ShouldQueue
                 // Create retry if under max attempts
                 $attempt = (int) ($this->scrape->attempt ?? 0);
                 if ($attempt < $maxAttempts) {
+                    Log::info('RunScrape: scheduling retry for scrape', ['scrape_id' => $this->scrape->id, 'attempt' => $attempt + 1, 'reason' => $reason]);
                     $new = \App\Models\Scrape::create([
                         'route_job_id' => $this->scrape->route_job_id,
                         'provider_code' => $this->scrape->provider_code,
@@ -100,6 +104,8 @@ class RunScrape implements ShouldQueue
                         'attempt' => $attempt + 1,
                     ]);
                     \App\Jobs\RunScrape::dispatch($new);
+                } else {
+                    Log::info('RunScrape: max attempts reached, not retrying', ['scrape_id' => $this->scrape->id, 'attempt' => $attempt]);
                 }
             } else {
                 // failed or blocked
@@ -108,6 +114,7 @@ class RunScrape implements ShouldQueue
 
                 $attempt = (int) ($this->scrape->attempt ?? 0);
                 if ($attempt < $maxAttempts) {
+                    Log::info('RunScrape: scheduling retry for failed scrape', ['scrape_id' => $this->scrape->id, 'attempt' => $attempt + 1, 'reason' => $reason]);
                     $new = \App\Models\Scrape::create([
                         'route_job_id' => $this->scrape->route_job_id,
                         'provider_code' => $this->scrape->provider_code,
@@ -116,6 +123,8 @@ class RunScrape implements ShouldQueue
                         'attempt' => $attempt + 1,
                     ]);
                     \App\Jobs\RunScrape::dispatch($new);
+                } else {
+                    Log::info('RunScrape: max attempts reached for failed scrape, not retrying', ['scrape_id' => $this->scrape->id, 'attempt' => $attempt]);
                 }
             }
         } catch (\Exception $e) {
@@ -127,6 +136,27 @@ class RunScrape implements ShouldQueue
             ]);
 
             $this->scrape->update(['status' => 'failed', 'finished_at' => now()]);
+
+            // Create a retry for exceptions if under max attempts
+            try {
+                $maxAttempts = config('scrapes.max_attempts', 3);
+                $attempt = (int) ($this->scrape->attempt ?? 0);
+                if ($attempt < $maxAttempts) {
+                    Log::warning('RunScrape: exception occurred, scheduling retry', ['scrape_id' => $this->scrape->id, 'attempt' => $attempt + 1, 'exception' => $e->getMessage()]);
+                    $new = \App\Models\Scrape::create([
+                        'route_job_id' => $this->scrape->route_job_id,
+                        'provider_code' => $this->scrape->provider_code,
+                        'provider_url' => $this->scrape->provider_url,
+                        'status' => 'pending',
+                        'attempt' => $attempt + 1,
+                    ]);
+                    \App\Jobs\RunScrape::dispatch($new);
+                } else {
+                    Log::info('RunScrape: max attempts reached after exception, not retrying', ['scrape_id' => $this->scrape->id, 'attempt' => $attempt]);
+                }
+            } catch (\Exception $inner) {
+                Log::error('RunScrape: failed to schedule retry after exception', ['scrape_id' => $this->scrape->id, 'error' => $inner->getMessage()]);
+            }
         }
     }
 }

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Models\Route as RouteModel;
 use App\Http\Controllers\Admin\ProviderController;
+use App\Livewire\AnalyticsDashboard;
 
 Route::get('/', function () {
     return view('welcome');
@@ -46,4 +47,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/scrapes/{scrape}', function (App\Models\Scrape $scrape) {
         return view('admin.scrapes.show', compact('scrape'));
     })->name('scrapes.show');
+
+    Route::get('/analytics', AnalyticsDashboard::class)->name('analytics');
+
 });

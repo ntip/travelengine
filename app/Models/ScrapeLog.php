@@ -16,11 +16,13 @@ class ScrapeLog extends Model
         'route_job_id',
         'content',
         'scrape_response_raw',
+        'request_payload',
         'meta',
     ];
 
     protected $casts = [
         'meta' => 'array',
+        'request_payload' => 'array',
     ];
 
     public function scrape()
